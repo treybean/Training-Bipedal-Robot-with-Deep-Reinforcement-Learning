@@ -1,0 +1,35 @@
+{
+    "ac_kwargs":	{},
+    "actor_critic":	"mlp_actor_critic",
+    "env_fn":	"<function call_experiment.<locals>.thunk_plus.<locals>.<lambda> at 0x103e94840>",
+    "epochs":	1000,
+    "exp_name":	"bipedaltest",
+    "gamma":	0.999,
+    "lam":	0.97,
+    "logger":	{
+        "<spinup.utils.logx.EpochLogger object at 0x103ef13c8>":	{
+            "epoch_dict":	{},
+            "exp_name":	"bipedaltest",
+            "first_row":	true,
+            "log_current_row":	{},
+            "log_headers":	[],
+            "output_dir":	"/Users/treybean/Programming/lib/spinningup/data/bipedaltest/bipedaltest_s0",
+            "output_file":	{
+                "<_io.TextIOWrapper name='/Users/treybean/Programming/lib/spinningup/data/bipedaltest/bipedaltest_s0/progress.txt' mode='w' encoding='UTF-8'>":	{
+                    "mode":	"w"
+                }
+            }
+        }
+    },
+    "logger_kwargs":	{
+        "exp_name":	"bipedaltest",
+        "output_dir":	"/Users/treybean/Programming/lib/spinningup/data/bipedaltest/bipedaltest_s0"
+    },
+    "max_ep_len":	1600,
+    "pi_lr":	0.0003,
+    "save_freq":	10,
+    "seed":	0,
+    "steps_per_epoch":	4800,
+    "train_v_iters":	80,
+    "vf_lr":	0.001
+}
