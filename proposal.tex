@@ -13,6 +13,9 @@
 \usepackage{microtype}      % microtypography
 \usepackage{lipsum}
 
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
 \title{Proposal: Training Bipedal Robot with Deep Reinforcement Learning}
 
 
@@ -44,13 +47,21 @@ Personally, I love the problems that machine learning is allowing us to solve. H
 
 \section{Problem Statement}
 \label{sec:problem}
-(approx. 1 paragraph)
 
-In this section, clearly describe the problem that is to be solved. The problem described should be well defined and should have at least one relevant potential solution. Additionally, describe the problem thoroughly such that it is clear that the problem is quantifiable (the problem can be expressed in mathematical or logical terms) , measurable (the problem can be measured by some metric and clearly observed), and replicable (the problem can be reproduced and occurs more than once).
+\begin{figure}[h]
+\caption{Bipedal walker falling after taking random actions}
+\centering
+\includegraphics[scale=0.25]{images/bipedal-fall-backward.png}
+\includegraphics[scale=0.25]{images/bipedal-fall-forward.png}
+\includegraphics[scale=0.25]{images/bipedal-fall-upside-down.png}
+\end{figure}
 
+Specifically, I will be aiming to solve the BipedalWalker-v2 environment that is part of the Box2D environments on OpenAI's Gym. This environment consists of a 4-joint walker robot that is given positive reward for moving, "walking", forward. Solving is defined by OpenAI as averaging a total 300 points in 100 consecutive episodes or trials. While creating an agent that can solve the problem is the primary goal, there is a leaderboard on OpenAI that is ranked by number of episodes required before the agent solves the problem. I will compare my agent against existing results, aiming for a top result.
 
 \section{Datasets and Inputs}
 \label{sec:datasets}
+
+
 (approx. 2-3 paragraphs)
 
 In this section, the dataset(s) and/or input(s) being considered for the project should be thoroughly described, such as how they relate to the problem and why they should be used. Information such as how the dataset or input is (was) obtained, and the characteristics of the dataset or input, should be included with relevant references and citations as necessary It should be clear how the dataset(s) or input(s) will be used in the project and whether their use is appropriate given the context of the problem.
