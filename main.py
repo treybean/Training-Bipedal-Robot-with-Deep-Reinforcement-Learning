@@ -1,5 +1,6 @@
 import gym
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
+import sys
 
 env = gym.make("BipedalWalker-v2")
 # video = VideoRecorder(env, base_path="./video")
@@ -16,6 +17,8 @@ for i_episode in range(50):
         if done:
             print(f"Episode {i_episode + 1} finished after {t+1} timesteps")
             break
+
+    sys.stdout.flush()
 
 # video.close()
 env.close()
