@@ -60,69 +60,46 @@ Specifically, I will be aiming to solve the BipedalWalker-v2 environment that is
 
 \section{Datasets and Inputs}
 \label{sec:datasets}
+The data that I'll be working with in this project is generated from the OpenAI Gym environment. For the BipedalWalker-v2 environment, the state space is a 24-dimension vector of continuous attributes, all with ranges from negative infinity to infinity. These attributes correspond to the following: hull angle speed, angular velocity, horizontal speed, vertical speed, position of joints and joints angular speed, legs contact with ground, and 10 lidar rangefinder measurements. These seem like a comprehensive set of inputs to successfully train a reinforcement learning agent.  
 
+The other key piece of data we'll be working with is the reward given at each timestep. In this environment, a reward is given for moving forward, which can total to over 300 points for reaching the far end of the environment. If the robot falls, it gets -100. Applying motor torque costs a small amount of points, thus rewarding efficient agents.
 
-(approx. 2-3 paragraphs)
-
-In this section, the dataset(s) and/or input(s) being considered for the project should be thoroughly described, such as how they relate to the problem and why they should be used. Information such as how the dataset or input is (was) obtained, and the characteristics of the dataset or input, should be included with relevant references and citations as necessary It should be clear how the dataset(s) or input(s) will be used in the project and whether their use is appropriate given the context of the problem.
-
+These inputs will be used to generate the next action for the robot. The action space consists of a 4-dimensional action vector that corresponding to the motor speed of each of the 4 joints. Each speed is constrained between -1 and 1. 
 
 \section{Solution Statement}
 \label{sec:solution}
-(approx. 1 paragraph)
-
-In this section, clearly describe a solution to the problem. The solution should be applicable to the project domain and appropriate for the dataset(s) or input(s) given. Additionally, describe the solution thoroughly such that it is clear that the solution is quantifiable (the solution can be expressed in mathematical or logical terms) , measurable (the solution can be measured by some metric and clearly observed), and replicable (the solution can be reproduced and occurs more than once).
+In order to solve this OpenAI Gym environment, which has both a continuous action and state space, I intend to first build a Deep Deterministic Policy Gradient agent (DDPG). I used this type of agent to solve the Quadcopter project—also a continuous action and state space environment—in the MLND's coursework. Additionally, I intend to explore modifications proposed to reduce the tendency of DDPG agents (and other Q-learning agents) to overestimate the Q-values by building a Twin Delayed Deep Deterministic Policy Gradient agent (TD3). \cite{DBLP:journals/corr/abs-1802-09477} The TD3 agent makes the following tweaks to the original DDPG algorithm. First, instead of training only one network for Q-values, TD3 takes a page out of Double-Q Learning and trains two networks to learn two Q-functions and takes the minimum Q-value between the two to reduce value overestimation. Next, it delays updating the policy until the values of the two Q-networks have converged. Finally, this technique uses a SARSA-style update for action estimates as a regularization strategy to further reduce variance. It's my hypothesis that this TD3 agent will be less brittle and will generate a solution, on average, in fewer training episodes than the DDPG agent.
 
 
 \section{Benchmark Model}
 \label{sec:benchmark}
-(approximately 1-2 paragraphs)
+As a benchmark model, I used the Vanilla Policy Gradient (VPG) algorithm implemented by OpenAI run on the Bipedal-Walker-v2 environment for 1000 epochs at 4800 steps per epoch and a maximum episode length of 1600. The gamma was set to 0.999. The rest of the configuration used default values for the experiment runner and VPG algorithm. As you can see in \ref{fig:benchmark_results}, this model was able to learn the environment and increasingly perform better, it wasn't able to "solve" the environment by scoring over 300 points in 100 consecutive episodes. Specifically, after running 3000 episodes (1000 epochs), the average total reward given over the last 99 episodes (33 epochs) was 89.91. And you can see from the chart that the agent still falls and gets penalized the -100 points. 
 
-In this section, provide the details for a benchmark model or result that relates to the domain, problem statement, and intended solution. Ideally, the benchmark model or result contextualizes existing methods or known information in the domain and problem given, which could then be objectively compared to the solution. Describe how the benchmark model or result is measurable (can be measured by some metric and clearly observed) with thorough detail.
-
+\begin{figure}[h]
+\caption{Plot of Average Total Reward per Episode for Vanilla Policy Gradient algorithm on the Bipedal-Walker-v2 environment }
+\centering
+\includegraphics[scale=0.25]{images/bipedal-vpg-performance-plot.png}
+\label{fig:benchmark_results}
+\end{figure}
 
 \section{Evaluation Metrics}
 \label{sec:metrics}
-(approx. 1-2 paragraphs)
+Based on this challenge, there are two primary metrics I will use to evaluate and compare approaches. First, the total reward achieved by the trained model. For this, I'll use the average total reward across the last 100 episodes. This will be slightly lower than the final trained model as it will still be learning, but it should be consistent and give us a close enough comparison of trained agent performance. 
 
-In this section, propose at least one evaluation metric that can be used to quantify the performance of both the benchmark model and the solution model. The evaluation metric(s) you propose should be appropriate given the context of the data, the problem statement, and the intended solution. Describe how the evaluation metric(s) are derived and provide an example of their mathematical representations (if applicable). Complex evaluation metrics should be clearly defined and quantifiable (can be expressed in mathematical or logical terms).
-
+Additionally, we will measure and compare the number of episodes required before the agent is able to solve the problem as defined, namely averaging a total greater than 300 points in 100 consecutive episodes.
 
 \section{Project Design}
 \label{sec:design}
-(approx. 1 page)
 
-In this final section, summarize a theoretical workflow for approaching a solution given the problem. Provide thorough discussion for what strategies you may consider employing, what analysis of the data might be required before being used, or which algorithms will be considered for your implementation. The workflow and discussion that you provide should align with the qualities of the previous sections. Additionally, you are encouraged to include small visualizations, pseudocode, or diagrams to aid in describing the project design, but it is not required. The discussion should clearly outline your intended workflow of the capstone project.
+As described above, I plan on using a Deep Deterministic Policy Gradient agent to solve this problem. At a high-level, this approach follows the actor-critic methodology, of learning "approximations to both policy and value functions ..., where ‘actor’ is a reference to the learned policy, and ‘critic’ refers to the learned value function, usually a state-value function" \cite{Sutton:2018:RLI:3312046}. For the architecture of the the networks, I intend to start by mimicking the networks used in the original DDPG paper \cite{DBLP:journals/corr/LillicrapHPHETS15}. Specifically, I will use two hidden layers for each network, a 400 and 300 unit dense layer. For the actor, I will use a tanh activation layer. I will initialize the final layer weights and biases of both the actor and critic networks from a uniform distribution between $-3e^{-3}$ and $3e^{-3}$ to ensure the initial outputs for the policy and value estimates are near zero. I will use a $10^{-4}$ and $10^{-3}$ learning rate for the actor and critic networks respectively. I will use Adam optimization for both networks. I will use a $\gamma$ of 0.99 and a $\tau$ of 0.001. For the critic network, I will employ L2 weight decay of $10^{-2}$. Finally, I will use the Ornstein-Uhlenbeck process with $\theta = 0.15$ and $\sigma = 0.2$ for the exploration noise process. I will use a batch size of 64 and a replay buffer size of $10^{6}$. 
 
+Once training the Deep Deterministic Policy Gradient (DDPG) agent and ideally solving the underlying OpenAI BipedalWalker-v2 environment. I will explore building a Twin Delayed Deep Deterministic Policy Gradient agent (TD3). First, I am going to duplicate the Q-network of the critic, using the same parameters and train both networks. I will then modify the critic to return the minimum Q-value to reduce value overestimation. Next, I will add a condition to only update the policy every other iteration instead of every iteration as is done in the DDPG algorithm. Finally, I'll implement the regularization technique, target policy smoothing, by adding a clipped amount of noise during the target policy update with a modified target update: $y=r+\gamma Q_{\theta'} (s', \pi_{\phi'}(s')+ \epsilon)$, where $\epsilon \sim clip(\mathcal{N}(0, \sigma), -c, c)$.
+
+At this point, I will compare the performance of TD3 and DDPG in solving the BipedalWalker-v2 environment, specifically comparing the number of episodes required before the agent is able to solve the problem as defined, assuming both agents are able to solve the environment.
+
+Additionally, based on some ideas in the both of the papers about these algorithms and my experience on the Quadcopter project, I intend to explore different noise strategies as well as different sizes for the hidden layers to measure the impact on these attributes of the agents.
 
 \bibliographystyle{unsrt}  
-\bibliography{references}  %%% Remove comment to use the external .bib file (using bibtex).
-%%% and comment out the ``thebibliography'' section.
-
-
-%%% Comment out this section when you \bibliography{references} is enabled.
-% \begin{thebibliography}{1}
-
-% \bibitem{kour2014real}
-% George Kour and Raid Saabne.
-% \newblock Real-time segmentation of on-line handwritten arabic script.
-% \newblock In {\em Frontiers in Handwriting Recognition (ICFHR), 2014 14th
-%   International Conference on}, pages 417--422. IEEE, 2014.
-
-% \bibitem{kour2014fast}
-% George Kour and Raid Saabne.
-% \newblock Fast classification of handwritten on-line arabic characters.
-% \newblock In {\em Soft Computing and Pattern Recognition (SoCPaR), 2014 6th
-%   International Conference of}, pages 312--318. IEEE, 2014.
-
-% \bibitem{hadash2018estimate}
-% Guy Hadash, Einat Kermany, Boaz Carmeli, Ofer Lavi, George Kour, and Alon
-%   Jacovi.
-% \newblock Estimate and replace: A novel approach to integrating deep neural
-%   networks with existing applications.
-% \newblock {\em arXiv preprint arXiv:1804.09028}, 2018.
-
-% \end{thebibliography}
-
+\bibliography{references}
 
 \end{document}
