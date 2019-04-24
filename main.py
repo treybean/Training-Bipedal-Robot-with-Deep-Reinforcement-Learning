@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 
 # from gym.wrappers.monitoring.video_recorder import VideoRecorder
 import sys
@@ -12,6 +13,9 @@ episode_count = 3000
 
 for i in range(episode_count):
     episode_reward = 0
+    max_reward = -np.inf
+    min_reward = np.inf
+
     # TODO: Explore shifting this back to env.reset()
     observation = agent.reset_episode()
 
@@ -27,6 +31,10 @@ for i in range(episode_count):
         # Capture reward
         episode_reward += reward
 
+        # Update min/max reward trackers
+        max_reward = max(max_reward, reward)
+        min_reward = min(min_reward, reward)
+
         # Have agent take action
         agent.step(action, reward, next_observation, done)
         # TODO: Explore if we can just capture observation when env.steps on line 23
@@ -34,7 +42,7 @@ for i in range(episode_count):
 
         if done:
             print(
-                f"Episode {i + 1} finished after {t + 1} timesteps. Reward: {episode_reward}. Final hull x: {env.hull.position.x}"
+                f"Episode {i + 1} finished after {t + 1} timesteps. Reward: total: {episode_reward}, max: {max_reward}, min: {min_reward}. Final hull x: {env.hull.position.x}"
             )
             break
 
