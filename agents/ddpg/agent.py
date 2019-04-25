@@ -126,3 +126,10 @@ class DDPG:
 
         new_weights = self.tau * local_weights + (1 - self.tau) * target_weights
         target_model.set_weights(new_weights)
+
+    def save_models(self):
+        self.actor_local.model.save("actor_local.h5")
+        self.actor_target.model.save("actor_target.h5")
+        self.critic_local.model.save("critic_local.h5")
+        self.critic_target.model.save("critic_target.h5")
+

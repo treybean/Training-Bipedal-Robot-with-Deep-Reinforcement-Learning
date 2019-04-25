@@ -63,8 +63,13 @@ class Actor:
         # )(net)
 
         # Scale [0, 1] output for each action dimension to proper range
+        # Create temp variable for storing self variables before using in lambda
+        # Without this, you get recursion error when saving Keras model: https://github.com/keras-team/keras/issues/12081
+        action_range = self.action_range
+        action_low = self.action_low
+
         actions = layers.Lambda(
-            lambda x: (x * self.action_range) + self.action_low, name="actions"
+            lambda x: (x * action_range) + action_low, name="actions"
         )(raw_actions)
 
         # Create Keras model
@@ -86,4 +91,3 @@ class Actor:
             outputs=[],
             updates=updates_op,
         )
-

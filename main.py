@@ -12,6 +12,7 @@ env = gym.make("BipedalWalker-v2")
 
 agent = DDPG(env)
 episode_count = 3000
+total_timesteps = 0
 
 output_file = open("ddpg.csv", "w")
 output = csv.writer(output_file)
@@ -52,8 +53,10 @@ for i in range(episode_count):
         observation = next_observation
 
         if done:
+            total_timesteps += t
+
             print(
-                f"({time.time() - start_time}) Episode {i + 1} finished after {t + 1} timesteps. Reward: total: {episode_reward}, max: {max_reward}, min: {min_reward}. Final hull x: {env.hull.position.x}"
+                f"({(time.time() - start_time):.2f}) Episode {i + 1} finished after {t + 1} timesteps. Reward: total: {episode_reward:.2f}, max: {max_reward:.2f}, min: {min_reward:.2f}. Final hull x: {env.hull.position.x:.2f}"
             )
             output.writerow(
                 [
@@ -65,10 +68,19 @@ for i in range(episode_count):
                     env.hull.position.x,
                 ]
             )
-            output_file.flush()
+
+            if (i + 1) % 100 == 0:
+                print(
+                    f"Average time/timestep: {((time.time() - start_time)/total_timesteps):.2f}"
+                )
+                output_file.flush()
+
             break
 
     sys.stdout.flush()
+
+# Save models
+agent.save_models()
 
 # video.close()
 env.close()
