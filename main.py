@@ -5,6 +5,7 @@ import numpy as np
 import sys
 from agents.ddpg.agent import DDPG
 import csv
+import time
 
 env = gym.make("BipedalWalker-v2")
 # video = VideoRecorder(env, base_path="./video")
@@ -17,6 +18,9 @@ output = csv.writer(output_file)
 output.writerow(
     ["episode", "steps", "episode_reward", "max_reward", "min_reward", "final_hull_x"]
 )
+
+start_time = time.time()
+
 
 for i in range(episode_count):
     episode_reward = 0
@@ -49,7 +53,7 @@ for i in range(episode_count):
 
         if done:
             print(
-                f"Episode {i + 1} finished after {t + 1} timesteps. Reward: total: {episode_reward}, max: {max_reward}, min: {min_reward}. Final hull x: {env.hull.position.x}"
+                f"({time.time() - start_time}) Episode {i + 1} finished after {t + 1} timesteps. Reward: total: {episode_reward}, max: {max_reward}, min: {min_reward}. Final hull x: {env.hull.position.x}"
             )
             output.writerow(
                 [
