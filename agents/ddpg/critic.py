@@ -56,29 +56,21 @@ class Critic:
         # # Add final output layer to prduce action values (Q values)
         # Q_values = layers.Dense(units=1, name="q_values")(net)
 
-        net_states = layers.Dense(
-            units=400, kernel_regularizer=layers.regularizers.l2(1e-2)
-        )(states)
-        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Dense(units=400)(states)
+        # net_states = layers.BatchNormalization()(net_states)
         net_states = layers.Activation("relu")(net_states)
 
-        net_states = layers.Dense(
-            units=300, kernel_regularizer=layers.regularizers.l2(1e-2)
-        )(net_states)
-        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Dense(units=300)(net_states)
+        # net_states = layers.BatchNormalization()(net_states)
         net_states = layers.Activation("relu")(net_states)
 
         # # Add hidden layer(s) for action pathway
-        net_actions = layers.Dense(
-            units=400, kernel_regularizer=layers.regularizers.l2(1e-2)
-        )(actions)
-        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Dense(units=400)(actions)
+        # net_actions = layers.BatchNormalization()(net_actions)
         net_actions = layers.Activation("relu")(net_actions)
 
-        net_actions = layers.Dense(
-            units=300, kernel_regularizer=layers.regularizers.l2(1e-2)
-        )(net_actions)
-        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Dense(units=300)(net_actions)
+        # net_actions = layers.BatchNormalization()(net_actions)
         net_actions = layers.Activation("relu")(net_actions)
 
         # # Combine state and action pathways
