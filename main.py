@@ -30,23 +30,37 @@ learn = True
 episode_count = 20000
 total_steps = 0
 
+# Pepare output file
 output_file = open("ddpg.csv", "w")
 output = csv.writer(output_file)
-output.writerow(
-    [
-        "episode",
-        "steps",
-        "episode_reward",
-        "max_reward",
-        "min_reward",
-        "max_pi_loss",
-        "min_pi_loss",
-        "mean_pi_loss",
-        "max_q_loss",
-        "min_q_loss",
-        "mean_q_loss",
+
+output_headers = [
+    "episode",
+    "steps",
+    "episode_reward",
+    "max_reward",
+    "min_reward",
+    "game_over",
+]
+
+if env.hull:
+    output_headers += [
+        "hull_position_x",
+        "hull_position_y",
+        "hull_linearVelocity_x",
+        "hull_linearVelocity_y",
     ]
-)
+
+output_headers += [
+    "max_pi_loss",
+    "min_pi_loss",
+    "mean_pi_loss",
+    "max_q_loss",
+    "min_q_loss",
+    "mean_q_loss",
+]
+
+output.writerow(output_headers)
 
 start_time = time.time()
 
@@ -101,38 +115,40 @@ for i in range(episode_count):
 
         if done:
             total_steps += t
+            output_row = [i + 1, t + 1]
 
             print(
-                f"({(time.time() - start_time):.2f}) Ep: {i + 1}, timesteps: {t + 1}: Reward: total: {episode_reward:.2f}, max: {max_reward:.2f}, min: {min_reward:.2f}, avg: {(episode_reward/t):.2f}.",
+                f"({(time.time() - start_time):.2f}) Ep: {i + 1}, timesteps: {t + 1}: Reward: total: {episode_reward:.2f}, max: {max_reward:.2f}, min: {min_reward:.2f}, avg: {(episode_reward/t):.2f}. Game over: {env.game_over}",
                 end=" ",
             )
+            output_row += [episode_reward, max_reward, min_reward, env.game_over]
+
+            if env.hull:
+                print(
+                    f"Hull: position: {{x: {env.hull.position.x}, y: {env.hull.position.y}}}, linear velocity: {{x: {env.hull.linearVelocity.x}, y: {env.hull.linearVelocity.y}}}",
+                    end=" ",
+                )
+                output_row += [
+                    env.hull.position.x,
+                    env.hull.position.y,
+                    env.hull.linearVelocity.x,
+                    env.hull.linearVelocity.y,
+                ]
 
             if pi_losses:
                 print(
                     f"Pi loss: max: {np.max(pi_losses):.2f}, min: {np.min(pi_losses):.2f}, avg: {np.mean(pi_losses):.2f}.",
                     end=" ",
                 )
+                output_row += [np.max(pi_losses), np.min(pi_losses), np.mean(pi_losses)]
 
             if q_losses:
                 print(
                     f"Q loss: max: {np.max(q_losses):.2f}, min: {np.min(q_losses):.2f}, avg: {np.mean(q_losses):.2f}."
                 )
+                output_row += [np.max(q_losses), np.min(q_losses), np.mean(q_losses)]
 
-            output.writerow(
-                [
-                    i + 1,
-                    t + 1,
-                    episode_reward,
-                    max_reward,
-                    min_reward,
-                    np.max(pi_losses),
-                    np.min(pi_losses),
-                    np.mean(pi_losses),
-                    np.max(q_losses),
-                    np.min(q_losses),
-                    np.mean(q_losses),
-                ]
-            )
+            output.writerow(output_row)
 
             # if episode_reward >= 300:
             #     agent.save_models(suffix=f"_episode_{i}")
