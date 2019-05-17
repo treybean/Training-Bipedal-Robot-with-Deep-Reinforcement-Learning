@@ -11,9 +11,7 @@ import numbers
 
 env_name = "BipedalWalker-v2"
 env = gym.make(env_name)
-
-# TODO: Add a configuration parameter and only do this if test == True
-# test_env = gym.make(env_name)
+test_env = gym.make(env_name)
 
 # video = VideoRecorder(env, base_path="./video")
 
@@ -28,7 +26,28 @@ learn = True
 # learn = False
 
 episode_count = 20000
-total_steps = 0
+
+
+def test_agent(env, agent, n=10):
+    episode_rewards = []
+
+    for _ in range(n):
+        episode_reward = 0
+
+        observation = env.reset()
+
+        for t in range(1600):
+            action = agent.get_action(observation, test=True)
+            observation, reward, done, _ = env.step(action)
+
+            episode_reward += reward
+
+            if done or (t == 1599):
+                episode_rewards.append(episode_reward)
+                break
+
+    return episode_rewards
+
 
 # Pepare output file
 output_file = open("ddpg.csv", "w")
@@ -58,11 +77,16 @@ output_headers += [
     "max_q_loss",
     "min_q_loss",
     "mean_q_loss",
+    "test_episode_reward_mean",
+    "test_episode_reward_max",
+    "test_episode_reward_min",
 ]
 
 output.writerow(output_headers)
 
+total_steps = 0
 start_time = time.time()
+best_episode_reward = -np.inf
 
 for i in range(episode_count):
     episode_reward = 0
@@ -116,6 +140,7 @@ for i in range(episode_count):
         if done:
             total_steps += t
             output_row = [i + 1, t + 1]
+            best_episode_reward = max(best_episode_reward, episode_reward)
 
             print(
                 f"({(time.time() - start_time):.2f}) Ep: {i + 1}, timesteps: {t + 1}: Reward: total: {episode_reward:.2f}, max: {max_reward:.2f}, min: {min_reward:.2f}, avg: {(episode_reward/t):.2f}. Game over: {env.game_over}",
@@ -148,10 +173,24 @@ for i in range(episode_count):
                 )
                 output_row += [np.max(q_losses), np.min(q_losses), np.mean(q_losses)]
 
-            output.writerow(output_row)
+            if episode_reward >= 200:
+                test_episode_rewards = test_agent(test_env, agent)
 
-            # if episode_reward >= 300:
-            #     agent.save_models(suffix=f"_episode_{i}")
+                print(
+                    f"Tested agent results: avg: {np.mean(test_episode_rewards)}, max: {np.max(test_episode_rewards)}, min: {np.min(test_episode_rewards)}"
+                )
+                output_row += [
+                    np.mean(test_episode_rewards),
+                    np.max(test_episode_rewards),
+                    np.min(test_episode_rewards),
+                ]
+
+                agent.save_models(suffix=f"_episode_{i}")
+
+            else:
+                output_row += [-1000, -1000, -1000]
+
+            output.writerow(output_row)
 
             # Every 100 episodes, report on average time/timestep and flush output_file
             if (i + 1) % 100 == 0:
@@ -169,4 +208,6 @@ for i in range(episode_count):
 
 # video.close()
 env.close()
+test_env.close()
 output_file.close()
+
