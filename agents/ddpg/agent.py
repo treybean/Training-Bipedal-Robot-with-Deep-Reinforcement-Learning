@@ -58,9 +58,12 @@ class DDPG:
         """Returns actions for given state(s) as per current policy."""
         state = np.reshape(state, [-1, self.state_size])
         action = self.actor_local.model.predict(state)[0]
-        return np.clip(
-            action + self.noise.sample(), -self.act_limit, self.act_limit
-        )  # add some noise for exploration
+
+        # add some noise for exploration
+        if not test:
+            action += self.noise.sample()
+
+        return np.clip(action, -self.act_limit, self.act_limit)
 
     def step(self, state, action, reward, next_state, done):
         pi_loss = None
