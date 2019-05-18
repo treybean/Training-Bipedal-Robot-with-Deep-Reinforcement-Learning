@@ -41,12 +41,12 @@ class DDPG:
 
         # Replay memory
         self.buffer_size = 1000000
-        self.batch_size = 100
+        self.batch_size = 64
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 
         # Algorithm parameters
         self.gamma = 0.99  # discount factor
-        self.tau = 0.005  # for soft update of target parameters
+        self.tau = 0.001  # for soft update of target parameters
 
         print(self.actor_local.model.summary())
         print(self.critic_local.model.summary())
@@ -141,14 +141,14 @@ class DDPG:
         new_weights = self.tau * local_weights + (1 - self.tau) * target_weights
         target_model.set_weights(new_weights)
 
-    def save_models(self, suffix=""):
-        self.actor_local.model.save(f"actor_local{suffix}.h5")
-        self.actor_target.model.save(f"actor_target{suffix}.h5")
-        self.critic_local.model.save(f"critic_local{suffix}.h5")
-        self.critic_target.model.save(f"critic_target{suffix}.h5")
+    def save_models(self, path="./", suffix=""):
+        self.actor_local.model.save(f"{path}actor_local{suffix}.h5")
+        self.actor_target.model.save(f"{path}actor_target{suffix}.h5")
+        self.critic_local.model.save(f"{path}critic_local{suffix}.h5")
+        self.critic_target.model.save(f"{path}critic_target{suffix}.h5")
 
-    def load_models(self, suffix=""):
-        self.actor_local.model = load_model(f"actor_local{suffix}.h5")
-        self.actor_target.model = load_model(f"actor_target{suffix}.h5")
-        self.critic_local.model = load_model(f"critic_local{suffix}.h5")
-        self.critic_target.model = load_model(f"critic_target{suffix}.h5")
+    def load_models(self, path="./", suffix=""):
+        self.actor_local.model = load_model(f"{path}actor_local{suffix}.h5")
+        self.actor_target.model = load_model(f"{path}actor_target{suffix}.h5")
+        self.critic_local.model = load_model(f"{path}critic_local{suffix}.h5")
+        self.critic_target.model = load_model(f"{path}critic_target{suffix}.h5")

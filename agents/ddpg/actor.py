@@ -88,7 +88,7 @@ class Actor:
         # Incorporate any additional losses here (e.g. from regularizers)
 
         # Define optimizer and training function
-        optimizer = optimizers.Adam(lr=1e-3)
+        optimizer = optimizers.Adam(lr=1e-4)
         updates_op = optimizer.get_updates(
             params=self.model.trainable_weights, loss=loss
         )

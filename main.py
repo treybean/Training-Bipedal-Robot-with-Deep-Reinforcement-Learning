@@ -185,7 +185,7 @@ for i in range(episode_count):
                     np.min(test_episode_rewards),
                 ]
 
-                agent.save_models(suffix=f"_episode_{i}")
+                agent.save_models(suffix=f"_episode_{i + 1}")
 
             else:
                 output_row += [-1000, -1000, -1000]
