@@ -4,6 +4,7 @@ import numpy as np
 # from gym.wrappers.monitoring.video_recorder import VideoRecorder
 import sys
 from agents.ddpg.agent import DDPG
+from agents.td3.agent import TD3
 from agents.spinningup.ddpg.ddpg import DDPG as SU_DDPG
 import csv
 import time
@@ -15,7 +16,8 @@ test_env = gym.make(env_name)
 
 # video = VideoRecorder(env, base_path="./video")
 
-agent = DDPG(env)
+# agent = DDPG(env)
+agent = TD3(env)
 # agent = SU_DDPG(env)
 
 # Should the agent learn?
@@ -50,7 +52,7 @@ def test_agent(env, agent, n=10):
 
 
 # Pepare output file
-output_file = open("ddpg.csv", "w")
+output_file = open(f"{type(agent).__name__}.csv", "w")
 output = csv.writer(output_file)
 
 output_headers = [
@@ -74,9 +76,12 @@ output_headers += [
     "max_pi_loss",
     "min_pi_loss",
     "mean_pi_loss",
-    "max_q_loss",
-    "min_q_loss",
-    "mean_q_loss",
+    "max_q1_loss",
+    "min_q1_loss",
+    "mean_q1_loss",
+    "max_q2_loss",
+    "min_q2_loss",
+    "mean_q2_loss",
     "test_episode_reward_mean",
     "test_episode_reward_max",
     "test_episode_reward_min",
@@ -98,7 +103,8 @@ for i in range(episode_count):
     agent.reset_episode(observation)
 
     pi_losses = []
-    q_losses = []
+    q1_losses = []
+    q2_losses = []
 
     for t in range(1600):
         # Render
@@ -119,7 +125,7 @@ for i in range(episode_count):
         min_reward = min(min_reward, reward)
 
         # Have agent take action
-        pi_loss, q_loss = agent.step(
+        pi_loss, q1_loss, q2_loss = agent.step(
             observation, action, reward, next_observation, done
         )
 
@@ -129,11 +135,17 @@ for i in range(episode_count):
             elif type(pi_loss) == list:
                 pi_losses = pi_loss
 
-        if q_loss:
-            if isinstance(q_loss, numbers.Number):
-                q_losses.append(q_loss)
-            elif type(q_loss) == list:
-                q_losses = q_loss
+        if q1_loss:
+            if isinstance(q1_loss, numbers.Number):
+                q1_losses.append(q1_loss)
+            elif type(q1_loss) == list:
+                q1_losses = q1_loss
+
+        if q2_loss:
+            if isinstance(q2_loss, numbers.Number):
+                q2_losses.append(q2_loss)
+            elif type(q2_loss) == list:
+                q2_losses = q2_loss
 
         observation = next_observation
 
@@ -166,12 +178,28 @@ for i in range(episode_count):
                     end=" ",
                 )
                 output_row += [np.max(pi_losses), np.min(pi_losses), np.mean(pi_losses)]
+            else:
+                output_row += ["", "", ""]
 
-            if q_losses:
+            if q1_losses:
                 print(
-                    f"Q loss: max: {np.max(q_losses):.2f}, min: {np.min(q_losses):.2f}, avg: {np.mean(q_losses):.2f}."
+                    f"Q1 loss: max: {np.max(q1_losses):.2f}, min: {np.min(q1_losses):.2f}, avg: {np.mean(q1_losses):.2f}.",
+                    end=" ",
                 )
-                output_row += [np.max(q_losses), np.min(q_losses), np.mean(q_losses)]
+                output_row += [np.max(q1_losses), np.min(q1_losses), np.mean(q1_losses)]
+            else:
+                output_row += ["", "", ""]
+
+            if q2_losses:
+                print(
+                    f"Q2 loss: max: {np.max(q2_losses):.2f}, min: {np.min(q2_losses):.2f}, avg: {np.mean(q2_losses):.2f}.",
+                    end=" ",
+                )
+                output_row += [np.max(q2_losses), np.min(q2_losses), np.mean(q2_losses)]
+            else:
+                output_row += ["", "", ""]
+
+            print("")
 
             if episode_reward >= 200:
                 test_episode_rewards = test_agent(test_env, agent)
