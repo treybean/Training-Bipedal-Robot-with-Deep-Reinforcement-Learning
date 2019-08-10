@@ -77,7 +77,7 @@ class DDPG:
             experiences = self.memory.sample()
             pi_loss, q_loss = self.learn(experiences)
 
-        return pi_loss, q_loss
+        return pi_loss, q_loss, None
 
     def learn(self, experiences):
         """Update policy and value parameters using given batch of experience tuples."""
