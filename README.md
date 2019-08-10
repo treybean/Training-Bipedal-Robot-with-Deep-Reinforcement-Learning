@@ -14,7 +14,3 @@ In order to run this, install docker and then:
 2. docker-compose up
 
 This will run the agent specified in main.py and output results to stdout as well as save files to the root project directory.
-
-### Todo
-
-1. Store results to automatically created directory in /results
