@@ -1,16 +1,21 @@
-import gym
 import numpy as np
-
-# from gym.wrappers.monitoring.video_recorder import VideoRecorder
+from datetime import datetime
+import os
+import csv
+import time
+import numbers
 import sys
 
+import gym
+
+# from gym.wrappers.monitoring.video_recorder import VideoRecorder
+
+# Import the agent
 # from agents.ddpg.agent import DDPG
 from agents.td3.agent import TD3
 
 # from agents.spinningup.ddpg.ddpg import DDPG as SU_DDPG
-import csv
-import time
-import numbers
+
 
 env_name = "BipedalWalker-v2"
 env = gym.make(env_name)
@@ -18,9 +23,16 @@ test_env = gym.make(env_name)
 
 # video = VideoRecorder(env, base_path="./video")
 
+# Specify the agent imported above
 # agent = DDPG(env)
 agent = TD3(env)
 # agent = SU_DDPG(env)
+
+# Create output directory to store results and saved models
+now = datetime.now()
+output_directory = f"./results/{type(agent).__name__}/{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}"
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
 
 # Should the agent learn?
 learn = True
@@ -54,7 +66,7 @@ def test_agent(env, agent, n=10):
 
 
 # Pepare output file
-output_file = open(f"{type(agent).__name__}.csv", "w")
+output_file = open(f"{output_directory}/results.csv", "w")
 output = csv.writer(output_file)
 
 output_headers = [
@@ -215,7 +227,9 @@ for i in range(episode_count):
                     np.min(test_episode_rewards),
                 ]
 
-                agent.save_models(suffix=f"_episode_{i + 1}")
+                agent.save_models(
+                    path=f"{output_directory}/", suffix=f"_episode_{i + 1}"
+                )
 
             else:
                 output_row += [-1000, -1000, -1000]
